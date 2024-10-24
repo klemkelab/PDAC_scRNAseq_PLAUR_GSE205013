@@ -3,6 +3,16 @@ import scvi
 import numpy as np
 import os
 
+# Function to print gene details and optionally plot UMAP (commented out).
+def plot(genes_list, markers):
+    # Loop through the gene list
+    for gene in genes_list:
+        if gene != "leiden":  # Skip 'leiden'
+            print(f"Gene: {gene}")
+            print(markers[markers.names == gene])
+            print("-----------------")
+
+
 def remove_ribosomal_genes(adata):
     # Identify ribosomal genes that start with 'RPS' (ribosomal protein, small subunit) or 'RPL' (ribosomal protein, large subunit)
     ribosomal_genes = [gene for gene in adata.var_names if gene.startswith('RPS') or gene.startswith('RPL')]
