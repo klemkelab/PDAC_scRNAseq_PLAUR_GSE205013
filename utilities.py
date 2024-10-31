@@ -2,6 +2,45 @@ import scanpy as sc
 import scvi
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+import gseapy as gp
+
+
+# Function to perform Gene Set Enrichment Analysis (GSEA) for a specific gene set and group (PLAUR+ or PLAUR-)
+def perform_gsea_and_plot(gene_list, group_name, gene_sets):
+    for gene_set in gene_sets:
+        # Perform GSEAPy Enrichr analysis for the current gene set
+        gsea_results = gp.enrichr(
+            gene_list=gene_list,      # List of marker genes (upregulated in PLAUR+ or PLAUR-)
+            gene_sets=gene_set,       # Current gene set being analyzed
+            organism='Human',         # Specify organism
+            outdir=None,              # Do not save results to disk
+            cutoff=0.05               # Show only significant pathways with p-value < 0.05
+        )
+
+        # Convert the GSEA results to a DataFrame
+        df_results = gsea_results.results
+
+        # Step 1: Sort the results by Combined Score in descending order
+        df_results_sorted = df_results.sort_values(by='Combined Score', ascending=False)
+
+        # Step 2: Select the top 10 enriched pathways for the current gene set
+        top_results = df_results_sorted.head(10)
+
+        # Step 3: Plot the top pathways in a separate figure for each gene set
+        plt.figure(figsize=(10, 8))  # Create a new figure with specified size
+        sns.barplot(x='Combined Score', y='Term', data=top_results, hue='Term', palette='coolwarm', legend=False)  # Create a bar plot
+        plt.title(f'Top 10 Enriched Pathways in {group_name} Cells ({gene_set})')  # Set the plot title
+        plt.xlabel('Combined Score')  # Label for the x-axis
+        plt.ylabel('Pathways')        # Label for the y-axis
+        plt.tight_layout()            # Adjust layout for better spacing
+        plt.show()                   # Display the plot
+
+
+# Function to flatten a list of lists if needed (in case your gene lists are nested)
+def flatten_gene_list(gene_list):
+    return [gene for sublist in gene_list for gene in sublist] if isinstance(gene_list[0], list) else gene_list
 
 # Function to print gene details and optionally plot UMAP (commented out).
 def plot(genes_list, markers):
